@@ -36,7 +36,7 @@ public class ComputeTardiness {
 	public static String jobsToString(int numJobs, int[][] jobs) {
 		String text = "Number of jobs: " + numJobs + ".\n";
 		for(int i = 0; i < numJobs; i++) {
-			text += "Job i: Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
+			text += "Job " + i + " : Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
 		}
 		return text;
 	}
@@ -51,11 +51,12 @@ public class ComputeTardiness {
 		System.out.println(jobsToString(instance.getNumJobs(), instance.getJobs()));
 		int tardiness = tard.getTardiness();
 		System.out.println("Tardiness: " + tardiness);
+		System.out.println(tard.getHashGer());
 
 		// Greedy greedy = new Greedy(instance);
 		// Schedule greedySchedule = greedy.getSchedule();
 		// System.out.println(greedySchedule.getTardiness());
-		// 
+		
 		// BestFirst bestFirst = new BestFirst(instance);
 		// Schedule bestFirstSchedule = bestFirst.getSchedule();
 		// System.out.println(bestFirstSchedule.getTardiness());

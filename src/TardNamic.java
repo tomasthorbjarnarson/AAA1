@@ -6,12 +6,14 @@ public class TardNamic {
   private int numJobs;
   private int[][] jobs;
   private HashMap<String, Integer> tardinessMap;
+  private int hashGer;
 
 
   public TardNamic(ProblemInstance instance) {
     numJobs = instance.getNumJobs();
     jobs = instance.getJobs();
     tardinessMap = new HashMap<String, Integer>();
+    hashGer = 0;
   }
 
   private static int getLongestJobIndex(int[][] jobs) {
@@ -34,17 +36,21 @@ public class TardNamic {
     return timeElapsed;
   }
 
-  private static String createJobKey(int[][] someJobs) {
+  private static String createJobKey(int[][] someJobs, int timeElapsed) {
     String key = "";
     for(int i = 0; i < someJobs.length; i++) {
       key += someJobs[i][0] + "-" + someJobs[i][1];
       key += "|";
     }
-    return key;
+    return key + timeElapsed;
   }
 
   public int getTardiness() {
     return getTardiness(jobs, 0, 0);
+  }
+
+  public int getHashGer() {
+    return hashGer;
   }
 
   public static String jobsToString(int numJobs, int[][] jobs) {
@@ -61,8 +67,9 @@ public class TardNamic {
     } else if(jobs.length == 1) {
       return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
     }
-    String jobsKey = createJobKey(jobs);
+    String jobsKey = createJobKey(jobs, timeElapsed);
     if (tardinessMap.containsKey(jobsKey)) {
+      hashGer += 1;
       return tardinessMap.get(jobsKey);
     }
     int longestJobIndex = getLongestJobIndex(jobs);
