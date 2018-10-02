@@ -1,16 +1,17 @@
 import java.util.Arrays;
+import java.util.HashMap;
 import java.lang.Math;
 
 public class TardNamic {
   private int numJobs;
   private int[][] jobs;
-  private int tardiness;
+  private HashMap<String, Integer> tardinessMap;
 
 
   public TardNamic(ProblemInstance instance) {
     numJobs = instance.getNumJobs();
     jobs = instance.getJobs();
-    tardiness = 0;
+    tardinessMap = new HashMap<String, Integer>();
   }
 
   private static int getLongestJobIndex(int[][] jobs) {
@@ -33,9 +34,17 @@ public class TardNamic {
     return timeElapsed;
   }
 
+  private static String createJobKey(int[][] someJobs) {
+    String key = "";
+    for(int i = 0; i < someJobs.length; i++) {
+      key += someJobs[i][0] + "-" + someJobs[i][1];
+      key += "|";
+    }
+    return key;
+  }
+
   public int getTardiness() {
     return getTardiness(jobs, 0, 0);
-
   }
 
   public static String jobsToString(int numJobs, int[][] jobs) {
@@ -47,15 +56,16 @@ public class TardNamic {
   }
 
   private int getTardiness(int[][] jobs, int timeElapsed, int depth) {
-    System.out.println("At depth: " + depth);
-    System.out.println("Total jobs: " + jobsToString(jobs.length, jobs));
     if(jobs.length == 0) {
       return 0;
     } else if(jobs.length == 1) {
       return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
     }
+    String jobsKey = createJobKey(jobs);
+    if (tardinessMap.containsKey(jobsKey)) {
+      return tardinessMap.get(jobsKey);
+    }
     int longestJobIndex = getLongestJobIndex(jobs);
-    System.out.println("Longest job index is: " + longestJobIndex);
     int minTardiness = Integer.MAX_VALUE;
     for(int i = 0; i < jobs.length - longestJobIndex; i++) {
       int tmpTardiness = 0;
@@ -75,21 +85,18 @@ public class TardNamic {
       for(int j = 0; j < numRightJobs; j++) {
         rightJobs[j] = jobs[longestJobIndex + j + i + 1];
       }
-      int leftJobsTimeElapsed = getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
-      System.out.println("Left Job Time Elapsed: " + leftJobsTimeElapsed);
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
+
       tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-      System.out.println("Current tardiness: " + tmpTardiness);
 
-      System.out.println("Left jobs: " + jobsToString(leftJobs.length, leftJobs));
-      System.out.println("Right jobs: " + jobsToString(rightJobs.length, rightJobs));
-
-      tmpTardiness += getTardiness(leftJobs, 0, depth + 1);
+      tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
       tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
 
       if(tmpTardiness < minTardiness) {
         minTardiness = tmpTardiness;
       }
     }
+    tardinessMap.put(jobsKey, minTardiness);
     return minTardiness;
   }
 
