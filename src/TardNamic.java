@@ -93,15 +93,17 @@ public class TardNamic {
         rightJobs[j] = jobs[longestJobIndex + j + i + 1];
       }
       int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
-
-      tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-
-      tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
-      tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
-
-      if(tmpTardiness < minTardiness) {
-        minTardiness = tmpTardiness;
+      
+      if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
+        tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+        tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
+        tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
+        if(tmpTardiness < minTardiness) {
+          minTardiness = tmpTardiness;
+        }
       }
+
+
     }
     tardinessMap.put(jobsKey, minTardiness);
     return minTardiness;

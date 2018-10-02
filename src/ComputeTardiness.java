@@ -49,9 +49,12 @@ public class ComputeTardiness {
 		TardNamic tard = new TardNamic(instance);
 		//Schedule tardSchedule = tard.getSchedule();
 		System.out.println(jobsToString(instance.getNumJobs(), instance.getJobs()));
+		long startTime = System.currentTimeMillis();
 		int tardiness = tard.getTardiness();
+		long stopTime = System.currentTimeMillis();
 		System.out.println("Tardiness: " + tardiness);
-		System.out.println(tard.getHashGer());
+		System.out.println("Hash hits: " + tard.getHashGer());
+		System.out.println("Time : " + (stopTime - startTime));
 
 		// Greedy greedy = new Greedy(instance);
 		// Schedule greedySchedule = greedy.getSchedule();
