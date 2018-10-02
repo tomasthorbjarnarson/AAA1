@@ -33,16 +33,31 @@ public class ComputeTardiness {
 		return instance;
 	}
 
+	public static String jobsToString(int numJobs, int[][] jobs) {
+		String text = "Number of jobs: " + numJobs + ".\n";
+		for(int i = 0; i < numJobs; i++) {
+			text += "Job i: Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
+		}
+		return text;
+	}
+
 	// reads a problem, and outputs the result of both greedy and best-first
     public static void main (String args[]) {
 		ProblemInstance instance = readInstance(args[0]);
-		
-		Greedy greedy = new Greedy(instance);
-		Schedule greedySchedule = greedy.getSchedule();
-		System.out.println(greedySchedule.getTardiness());
-		
-		BestFirst bestFirst = new BestFirst(instance);
-		Schedule bestFirstSchedule = bestFirst.getSchedule();
-		System.out.println(bestFirstSchedule.getTardiness());
+		instance.sortJobs();
+
+		TardNamic tard = new TardNamic(instance);
+		//Schedule tardSchedule = tard.getSchedule();
+		System.out.println(jobsToString(instance.getNumJobs(), instance.getJobs()));
+		int tardiness = tard.getTardiness();
+		System.out.println("Tardiness: " + tardiness);
+
+		// Greedy greedy = new Greedy(instance);
+		// Schedule greedySchedule = greedy.getSchedule();
+		// System.out.println(greedySchedule.getTardiness());
+		// 
+		// BestFirst bestFirst = new BestFirst(instance);
+		// Schedule bestFirstSchedule = bestFirst.getSchedule();
+		// System.out.println(bestFirstSchedule.getTardiness());
 	}
 }

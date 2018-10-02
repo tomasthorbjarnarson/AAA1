@@ -18,14 +18,6 @@ public class ProblemInstance {
 	}
 
 	public void sortJobs() {
-		Arrays.sort(this.jobs, (a, b) -> Integer.compare(a[1], b[1]));
-	}
-
-	public String toString() {
-		String text = "Number of jobs: " + numJobs;
-		for(int i = 0; i < numJobs; i++) {
-			text += "Job i: Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
-		}
-		return text;
+		Arrays.sort(jobs, (a, b) -> Integer.compare(a[1], b[1]));
 	}
 }
