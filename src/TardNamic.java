@@ -53,6 +53,10 @@ public class TardNamic {
     return hashGer;
   }
 
+  public int getHashSize() {
+    return tardinessMap.size();
+  }
+
   public static String jobsToString(int numJobs, int[][] jobs) {
     String text = "Number of jobs: " + numJobs + ".\n";
     for(int i = 0; i < numJobs; i++) {
@@ -93,7 +97,7 @@ public class TardNamic {
         rightJobs[j] = jobs[longestJobIndex + j + i + 1];
       }
       int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
-      
+
       if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
         tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
         tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
