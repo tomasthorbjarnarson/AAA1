@@ -49,11 +49,12 @@ public class ComputeTardiness {
 		TardNamic tard = new TardNamic(instance);
 		//Schedule tardSchedule = tard.getSchedule();
 		System.out.println(jobsToString(instance.getNumJobs(), instance.getJobs()));
-		int[][] leftJobs = tard.getSchedule();
+		int tardiness = tard.getTardiness();
+		System.out.println("Tardiness: " + tardiness);
 
-		Greedy greedy = new Greedy(instance);
-		Schedule greedySchedule = greedy.getSchedule();
-		System.out.println(greedySchedule.getTardiness());
+		// Greedy greedy = new Greedy(instance);
+		// Schedule greedySchedule = greedy.getSchedule();
+		// System.out.println(greedySchedule.getTardiness());
 		// 
 		// BestFirst bestFirst = new BestFirst(instance);
 		// Schedule bestFirstSchedule = bestFirst.getSchedule();
