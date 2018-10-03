@@ -1,19 +1,16 @@
-import java.util.Arrays;
 import java.util.HashMap;
 import java.lang.Math;
 
 public class TardNamic {
-  private int numJobs;
   private int[][] jobs;
   private HashMap<String, Integer> tardinessMap;
-  private int hashGer;
+  private int cacheHits;
 
 
   public TardNamic(ProblemInstance instance) {
-    numJobs = instance.getNumJobs();
     jobs = instance.getJobs();
     tardinessMap = new HashMap<String, Integer>();
-    hashGer = 0;
+    cacheHits = 0;
   }
 
   private static int getLongestJobIndex(int[][] jobs) {
@@ -30,42 +27,33 @@ public class TardNamic {
 
   private static int getJobTimeElapsed(int[][] someJobs) {
     int timeElapsed = 0;
-    for(int i = 0; i < someJobs.length; i++) {
-      timeElapsed += someJobs[i][0];
+    for (int[] someJob : someJobs) {
+      timeElapsed += someJob[0];
     }
     return timeElapsed;
   }
 
   private static String createJobKey(int[][] someJobs, int timeElapsed) {
-    String key = "";
-    for(int i = 0; i < someJobs.length; i++) {
-      key += someJobs[i][0] + "-" + someJobs[i][1];
-      key += "|";
+    StringBuilder keyBuilder = new StringBuilder();
+    for (int[] someJob : someJobs) {
+      keyBuilder.append(someJob[0]).append("-").append(someJob[1]).append("|");
     }
-    return key + timeElapsed;
+    return keyBuilder.append(timeElapsed).toString();
   }
 
   public int getTardiness() {
-    return getTardiness(jobs, 0, 0);
+    return getTardiness(jobs, 0);
   }
 
-  public int getHashGer() {
-    return hashGer;
+  public int getCacheHits() {
+    return cacheHits;
   }
 
   public int getHashSize() {
     return tardinessMap.size();
   }
 
-  public static String jobsToString(int numJobs, int[][] jobs) {
-    String text = "Number of jobs: " + numJobs + ".\n";
-    for(int i = 0; i < numJobs; i++) {
-      text += "Job " + i + ": Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
-    }
-    return text;
-  }
-
-  private int getTardiness(int[][] jobs, int timeElapsed, int depth) {
+  private int getTardiness(int[][] jobs, int timeElapsed) {
     if(jobs.length == 0) {
       return 0;
     } else if(jobs.length == 1) {
@@ -73,7 +61,7 @@ public class TardNamic {
     }
     String jobsKey = createJobKey(jobs, timeElapsed);
     if (tardinessMap.containsKey(jobsKey)) {
-      hashGer += 1;
+      cacheHits += 1;
       return tardinessMap.get(jobsKey);
     }
     int longestJobIndex = getLongestJobIndex(jobs);
@@ -100,8 +88,8 @@ public class TardNamic {
 
       if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
         tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-        tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
-        tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
+        tmpTardiness += getTardiness(leftJobs, timeElapsed);
+        tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed);
         if(tmpTardiness < minTardiness) {
           minTardiness = tmpTardiness;
         }

@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class ProblemInstance {
 	private int numJobs;
@@ -18,6 +19,6 @@ public class ProblemInstance {
 	}
 
 	public void sortJobs() {
-		Arrays.sort(jobs, (a, b) -> Integer.compare(a[1], b[1]));
+		Arrays.sort(jobs, Comparator.comparingInt(a -> a[1]));
 	}
 }

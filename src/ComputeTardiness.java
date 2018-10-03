@@ -33,14 +33,6 @@ public class ComputeTardiness {
 		return instance;
 	}
 
-	public static String jobsToString(int numJobs, int[][] jobs) {
-		String text = "Number of jobs: " + numJobs + ".\n";
-		for(int i = 0; i < numJobs; i++) {
-			text += "Job " + i + " : Time = " + jobs[i][0] + ". Due = " + jobs[i][1] + ".\n";
-		}
-		return text;
-	}
-
 	// reads a problem, and outputs the result of both greedy and best-first
     public static void main (String args[]) {
 		ProblemInstance instance = readInstance(args[0]);
@@ -52,7 +44,7 @@ public class ComputeTardiness {
 		int tardiness = tard.getTardiness();
 		long stopTime = System.currentTimeMillis();
 		System.out.println("Tardiness: " + tardiness);
-		System.out.println("Hash hits: " + tard.getHashGer());
+		System.out.println("Hash hits: " + tard.getCacheHits());
 		System.out.println("Hash size: " + tard.getHashSize());
 		System.out.println("Time : " + (stopTime - startTime));
 
