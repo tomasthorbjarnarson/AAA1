@@ -45,11 +45,23 @@ public class TardNamic {
     return getTardiness(jobs, 0);
   }
 
+  public int getTardinessNoCache() {
+    return getTardinessNoCache(jobs, 0);
+  }
+
+  public int getTardinessNoDeltaRestriction() {
+    return getTardinessNoDeltaRestriction(jobs, 0);
+  }
+
+  public int getTardinessRaw() {
+    return getTardinessRaw(jobs, 0);
+  }
+
   public int getCacheHits() {
     return cacheHits;
   }
 
-  public int getHashSize() {
+  public int getCacheSize() {
     return tardinessMap.size();
   }
 
@@ -98,6 +110,128 @@ public class TardNamic {
 
     }
     tardinessMap.put(jobsKey, minTardiness);
+    return minTardiness;
+  }
+
+  private int getTardinessNoCache(int[][] jobs, int timeElapsed) {
+    if(jobs.length == 0) {
+      return 0;
+    } else if(jobs.length == 1) {
+      return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
+    }
+    int longestJobIndex = getLongestJobIndex(jobs);
+    int minTardiness = Integer.MAX_VALUE;
+    for(int i = 0; i < jobs.length - longestJobIndex; i++) {
+      int tmpTardiness = 0;
+      int numLeftJobs = longestJobIndex+i;
+      int numRightJobs = jobs.length - longestJobIndex - i - 1;
+
+      int[][] leftJobs = new int[numLeftJobs][2];
+      int[][] rightJobs = new int[numRightJobs][2];
+
+      for(int j = 0; j < numLeftJobs; j++) {
+        int tmpJ = j;
+        if(j >= longestJobIndex) {
+          tmpJ += 1;
+        }
+        leftJobs[j] = jobs[tmpJ];
+      }
+      for(int j = 0; j < numRightJobs; j++) {
+        rightJobs[j] = jobs[longestJobIndex + j + i + 1];
+      }
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
+
+      if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
+        tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+        tmpTardiness += getTardinessNoCache(leftJobs, timeElapsed);
+        tmpTardiness += getTardinessNoCache(rightJobs, leftJobsTimeElapsed);
+        if(tmpTardiness < minTardiness) {
+          minTardiness = tmpTardiness;
+        }
+      }
+    }
+    return minTardiness;
+  }
+
+  private int getTardinessNoDeltaRestriction(int[][] jobs, int timeElapsed) {
+    if(jobs.length == 0) {
+      return 0;
+    } else if(jobs.length == 1) {
+      return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
+    }
+    String jobsKey = createJobKey(jobs, timeElapsed);
+    if (tardinessMap.containsKey(jobsKey)) {
+      cacheHits += 1;
+      return tardinessMap.get(jobsKey);
+    }
+    int longestJobIndex = getLongestJobIndex(jobs);
+    int minTardiness = Integer.MAX_VALUE;
+    for(int i = 0; i < jobs.length - longestJobIndex; i++) {
+      int tmpTardiness = 0;
+      int numLeftJobs = longestJobIndex+i;
+      int numRightJobs = jobs.length - longestJobIndex - i - 1;
+
+      int[][] leftJobs = new int[numLeftJobs][2];
+      int[][] rightJobs = new int[numRightJobs][2];
+
+      for(int j = 0; j < numLeftJobs; j++) {
+        int tmpJ = j;
+        if(j >= longestJobIndex) {
+          tmpJ += 1;
+        }
+        leftJobs[j] = jobs[tmpJ];
+      }
+      for(int j = 0; j < numRightJobs; j++) {
+        rightJobs[j] = jobs[longestJobIndex + j + i + 1];
+      }
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
+
+      tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+      tmpTardiness += getTardinessNoDeltaRestriction(leftJobs, timeElapsed);
+      tmpTardiness += getTardinessNoDeltaRestriction(rightJobs, leftJobsTimeElapsed);
+      if(tmpTardiness < minTardiness) {
+        minTardiness = tmpTardiness;
+      }
+    }
+    tardinessMap.put(jobsKey, minTardiness);
+    return minTardiness;
+  }
+
+  private int getTardinessRaw(int[][] jobs, int timeElapsed) {
+    if(jobs.length == 0) {
+      return 0;
+    } else if(jobs.length == 1) {
+      return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
+    }
+    int longestJobIndex = getLongestJobIndex(jobs);
+    int minTardiness = Integer.MAX_VALUE;
+    for(int i = 0; i < jobs.length - longestJobIndex; i++) {
+      int tmpTardiness = 0;
+      int numLeftJobs = longestJobIndex+i;
+      int numRightJobs = jobs.length - longestJobIndex - i - 1;
+
+      int[][] leftJobs = new int[numLeftJobs][2];
+      int[][] rightJobs = new int[numRightJobs][2];
+
+      for(int j = 0; j < numLeftJobs; j++) {
+        int tmpJ = j;
+        if(j >= longestJobIndex) {
+          tmpJ += 1;
+        }
+        leftJobs[j] = jobs[tmpJ];
+      }
+      for(int j = 0; j < numRightJobs; j++) {
+        rightJobs[j] = jobs[longestJobIndex + j + i + 1];
+      }
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
+
+      tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+      tmpTardiness += getTardinessRaw(leftJobs, timeElapsed);
+      tmpTardiness += getTardinessRaw(rightJobs, leftJobsTimeElapsed);
+      if(tmpTardiness < minTardiness) {
+        minTardiness = tmpTardiness;
+      }
+    }
     return minTardiness;
   }
 
