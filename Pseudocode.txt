@@ -1,0 +1,44 @@
+Let J be all jobs
+Let H be a list to store results
+Sort jobs in ascending order by due time, di
+
+Let timeElapsed be 0
+Call getTardiness(J, timeElapsed)
+
+function getTardiness(J, timeElapsed):
+  if the size of J is 0: return 0;
+  if the size of J is 1:
+    Let j0 be the only job in J
+    return max(timeElapsed plus j0's processing time - j0's due time, 0)
+  endif
+
+  check in H if a job with all jobs in J and the same timeElapsed has been
+  processed. if so then return that result;
+
+  Let k be the index of the job in J with the longest processing time, pi
+
+  Let minTardiness be a very large number
+
+  For job jk in J that have a later due time than k:
+    let leftJobs be a list of jobs in J\{k} that have a due time before jk
+    let rightJobs be a list of jobs in J\{k} that have a due time after jk
+
+    let rightTime be the timeElapsed + the sum of processing times for all leftJobs + the processing time of job k
+
+    if the size of rightJobs is zero or rightTime is less than the due time of the first job in rightJobs:
+      let tardiness be max(rightTime - the due time of the longest job, 0)
+      + getTardiness(leftJobs, timeElapsed)
+      + getTardiness(rightJobs, rightTime)
+
+      if that tardiness is less than minTardiness:
+        set minTardiness as tardiness
+      endif
+      if mintardiness is equal to 0:
+        mintardiness will never change, we can break the for loop
+    endif
+  endfor
+
+  Store minTardiness in H for the jobs J and timeElapsed
+  return minTardiness;
+
+
