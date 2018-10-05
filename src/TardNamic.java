@@ -105,6 +105,9 @@ public class TardNamic {
         if(tmpTardiness < minTardiness) {
           minTardiness = tmpTardiness;
         }
+        if(minTardiness == 0) {
+          break;
+        }
       }
 
 
