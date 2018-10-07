@@ -48,18 +48,6 @@ public class TardNamic {
     return getTardiness(jobs, 0);
   }
 
-  public int getTardinessWithDeltaRestriction() {
-    return getTardinessWithDeltaRestriction(jobs, 0);
-  }
-
-  public int getTardinessWithCache() {
-    return getTardinessWithCache(jobs, 0);
-  }
-
-  public int getTardinessWithMinOptimisation() {
-    return getTardinessWithMinOptimisation(jobs, 0);
-  }
-
   public int getTardinessRaw() {
     return getTardinessRaw(jobs, 0);
   }
@@ -119,6 +107,23 @@ public class TardNamic {
     }
     tardinessMap.put(jobsKey, minTardiness);
     return minTardiness;
+  }
+
+  //      All Functions below this one are purely for testing purposes.
+
+
+
+
+  public int getTardinessWithDeltaRestriction() {
+    return getTardinessWithDeltaRestriction(jobs, 0);
+  }
+
+  public int getTardinessWithCache() {
+    return getTardinessWithCache(jobs, 0);
+  }
+
+  public int getTardinessWithMinOptimisation() {
+    return getTardinessWithMinOptimisation(jobs, 0);
   }
 
   private int getTardinessWithDeltaRestriction(int[][] jobs, int timeElapsed) {
