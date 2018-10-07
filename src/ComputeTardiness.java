@@ -48,6 +48,8 @@ public class ComputeTardiness {
             System.out.println(tardiness);
         }else if (args.length == 2 && args[1].equals("full")) {
 		    fullMeasurement(instance);
+        }else if (args.length == 2 && args[1].equals("compare")) {
+		    compareMeasurements();
         }else if (args.length == 2 && args[1].equals("measure")) {
             for (int i = 0; i < 20; i++) {
                 TardNamic tard = new TardNamic(instance);
@@ -161,6 +163,92 @@ public class ComputeTardiness {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public static void compareMeasurements() {
+        try {
+            FileWriter fw = new FileWriter("compare.csv");
+            fw.append("RDD;TF;N;BestFirst;;Greedy;;Tardnamic");
+            fw.flush();
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (String rdd : rdds) {
+            for (String tf : tfs) {
+                StringBuilder printval = new StringBuilder();
+                ProblemInstance bestFirstInstance = readInstance("../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#10.dat");
+                ProblemInstance greedyInstance = readInstance("../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#10.dat");
+                ProblemInstance tardInstance = readInstance("../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#10.dat");
+
+                BestFirst bestFirst = new BestFirst(bestFirstInstance);
+                long startTime = System.currentTimeMillis();
+                int bestFirstTardiness = bestFirst.getSchedule().getTardiness();
+                long stopTime = System.currentTimeMillis();
+                long bestFirstTime = stopTime-startTime;
+
+                Greedy greedy = new Greedy(greedyInstance);
+                startTime = System.currentTimeMillis();
+                int greedyTardiness = greedy.getSchedule().getTardiness();
+                stopTime = System.currentTimeMillis();
+                long greedyTime = stopTime-startTime;
+
+                TardNamic tard = new TardNamic(tardInstance);
+                startTime = System.currentTimeMillis();
+                int tardTardiness = tard.getTardiness();
+                stopTime = System.currentTimeMillis();
+                long tardTime = stopTime-startTime;
+
+                printval.append("\r\n").append(rdd.replace(".", ",")).append(";")
+                        .append(tf.replace(".", ",")).append(";").append("10;");
+                printval.append(bestFirstTardiness).append(";").append(bestFirstTime).append(";");
+                printval.append(greedyTardiness).append(";").append(greedyTime).append(";");
+                printval.append(tardTardiness).append(";").append(tardTime);
+                try {
+                    FileWriter fw = new FileWriter("compare.csv", true);
+                    fw.append(printval);
+                    fw.flush();
+                    fw.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        String[] sizes = {"20", "30", "40", "50", "60", "70", "80", "90", "100"};
+        for (String rdd : rdds) {
+            for (String tf : tfs) {
+                for (String n : sizes) {
+                    StringBuilder printval = new StringBuilder();
+                    ProblemInstance greedyInstance = readInstance("../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#" + n + ".dat");
+                    ProblemInstance tardInstance = readInstance("../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#" + n + ".dat");
+
+                    Greedy greedy = new Greedy(greedyInstance);
+                    long startTime = System.currentTimeMillis();
+                    int greedyTardiness = greedy.getSchedule().getTardiness();
+                    long stopTime = System.currentTimeMillis();
+                    long greedyTime = stopTime-startTime;
+
+                    TardNamic tard = new TardNamic(tardInstance);
+                    startTime = System.currentTimeMillis();
+                    int tardTardiness = tard.getTardiness();
+                    stopTime = System.currentTimeMillis();
+                    long tardTime = stopTime-startTime;
+
+                    printval.append("\r\n").append(rdd.replace(".", ",")).append(";")
+                            .append(tf.replace(".", ",")).append(";").append("10;");
+                    printval.append("XXX;XXX;");
+                    printval.append(greedyTardiness).append(";").append(greedyTime).append(";");
+                    printval.append(tardTardiness).append(";").append(tardTime);
+                    try {
+                        FileWriter fw = new FileWriter("compare.csv", true);
+                        fw.append(printval);
+                        fw.flush();
+                        fw.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 }

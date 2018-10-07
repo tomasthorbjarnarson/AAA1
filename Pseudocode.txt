@@ -16,18 +16,18 @@ function getTardiness(J, timeElapsed):
   check in H if a job with all jobs in J and the same timeElapsed has been
   processed. if so then return that result;
 
-  Let k be the index of the job in J with the longest processing time, pi
+  Let k be the job in J with the longest processing time, pi
 
   Let minTardiness be a very large number
 
-  For job jk in J that have a later due time than k:
+  For every job jk in J that has a later due time than k:
     let leftJobs be a list of jobs in J\{k} that have a due time before jk
     let rightJobs be a list of jobs in J\{k} that have a due time after jk
 
     let rightTime be the timeElapsed + the sum of processing times for all leftJobs + the processing time of job k
 
     if the size of rightJobs is zero or rightTime is less than the due time of the first job in rightJobs:
-      let tardiness be max(rightTime - the due time of the longest job, 0)
+      let tardiness be max(rightTime - the due time of k, 0)
         + getTardiness(leftJobs, timeElapsed)
         + getTardiness(rightJobs, rightTime)
 

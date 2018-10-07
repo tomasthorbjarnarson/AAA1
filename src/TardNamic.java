@@ -116,8 +116,6 @@ public class TardNamic {
           break;
         }
       }
-
-
     }
     tardinessMap.put(jobsKey, minTardiness);
     return minTardiness;
