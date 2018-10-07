@@ -10,7 +10,7 @@ function getTardiness(J, timeElapsed):
   if the size of J is 0: return 0;
   if the size of J is 1:
     Let j0 be the only job in J
-    return max(timeElapsed + j0's processing time - j0's due time, 0);
+    return max(timeElapsed + j0's processing time - j0's due time, 0)
   endif
 
   check in H if a job with all jobs in J and the same timeElapsed has been
