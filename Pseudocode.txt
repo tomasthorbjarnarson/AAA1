@@ -1,5 +1,6 @@
 Let J be all jobs
 Let H be a list to store results
+
 Sort jobs in ascending order by due time, di
 
 Let timeElapsed be 0
@@ -9,7 +10,7 @@ function getTardiness(J, timeElapsed):
   if the size of J is 0: return 0;
   if the size of J is 1:
     Let j0 be the only job in J
-    return max(timeElapsed plus j0's processing time - j0's due time, 0)
+    return max(timeElapsed + j0's processing time - j0's due time, 0);
   endif
 
   check in H if a job with all jobs in J and the same timeElapsed has been
@@ -27,15 +28,19 @@ function getTardiness(J, timeElapsed):
 
     if the size of rightJobs is zero or rightTime is less than the due time of the first job in rightJobs:
       let tardiness be max(rightTime - the due time of the longest job, 0)
-      + getTardiness(leftJobs, timeElapsed)
-      + getTardiness(rightJobs, rightTime)
+        + getTardiness(leftJobs, timeElapsed)
+        + getTardiness(rightJobs, rightTime)
 
-      if that tardiness is less than minTardiness:
+      if tardiness is less than minTardiness:
         set minTardiness as tardiness
       endif
+
       if mintardiness is equal to 0:
-        mintardiness will never change, we can break the for loop
+        mintardiness will never change, break the for loop
+      endif
+
     endif
+
   endfor
 
   Store minTardiness in H for the jobs J and timeElapsed
