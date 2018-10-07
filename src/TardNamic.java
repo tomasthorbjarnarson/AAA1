@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.lang.Math;
 
@@ -9,6 +11,7 @@ public class TardNamic {
 
   public TardNamic(ProblemInstance instance) {
     jobs = instance.getJobs();
+    Arrays.sort(jobs, Comparator.comparingInt(a -> a[1]));
     tardinessMap = new HashMap<String, Integer>();
     cacheHits = 0;
   }
@@ -45,12 +48,16 @@ public class TardNamic {
     return getTardiness(jobs, 0);
   }
 
-  public int getTardinessNoCache() {
-    return getTardinessNoCache(jobs, 0);
+  public int getTardinessWithDeltaRestriction() {
+    return getTardinessWithDeltaRestriction(jobs, 0);
   }
 
-  public int getTardinessNoDeltaRestriction() {
-    return getTardinessNoDeltaRestriction(jobs, 0);
+  public int getTardinessWithCache() {
+    return getTardinessWithCache(jobs, 0);
+  }
+
+  public int getTardinessWithMinOptimisation() {
+    return getTardinessWithMinOptimisation(jobs, 0);
   }
 
   public int getTardinessRaw() {
@@ -116,7 +123,7 @@ public class TardNamic {
     return minTardiness;
   }
 
-  private int getTardinessNoCache(int[][] jobs, int timeElapsed) {
+  private int getTardinessWithDeltaRestriction(int[][] jobs, int timeElapsed) {
     if(jobs.length == 0) {
       return 0;
     } else if(jobs.length == 1) {
@@ -146,8 +153,8 @@ public class TardNamic {
 
       if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
         tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-        tmpTardiness += getTardinessNoCache(leftJobs, timeElapsed);
-        tmpTardiness += getTardinessNoCache(rightJobs, leftJobsTimeElapsed);
+        tmpTardiness += getTardinessWithDeltaRestriction(leftJobs, timeElapsed);
+        tmpTardiness += getTardinessWithDeltaRestriction(rightJobs, leftJobsTimeElapsed);
         if(tmpTardiness < minTardiness) {
           minTardiness = tmpTardiness;
         }
@@ -156,7 +163,7 @@ public class TardNamic {
     return minTardiness;
   }
 
-  private int getTardinessNoDeltaRestriction(int[][] jobs, int timeElapsed) {
+  private int getTardinessWithCache(int[][] jobs, int timeElapsed) {
     if(jobs.length == 0) {
       return 0;
     } else if(jobs.length == 1) {
@@ -190,13 +197,52 @@ public class TardNamic {
       int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
 
       tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-      tmpTardiness += getTardinessNoDeltaRestriction(leftJobs, timeElapsed);
-      tmpTardiness += getTardinessNoDeltaRestriction(rightJobs, leftJobsTimeElapsed);
+      tmpTardiness += getTardinessWithCache(leftJobs, timeElapsed);
+      tmpTardiness += getTardinessWithCache(rightJobs, leftJobsTimeElapsed);
       if(tmpTardiness < minTardiness) {
         minTardiness = tmpTardiness;
       }
     }
     tardinessMap.put(jobsKey, minTardiness);
+    return minTardiness;
+  }
+
+  private int getTardinessWithMinOptimisation(int[][] jobs, int timeElapsed) {
+    if(jobs.length == 0) {
+      return 0;
+    } else if(jobs.length == 1) {
+      return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
+    }
+    int longestJobIndex = getLongestJobIndex(jobs);
+    int minTardiness = Integer.MAX_VALUE;
+    for(int i = 0; i < jobs.length - longestJobIndex; i++) {
+      int tmpTardiness = 0;
+      int numLeftJobs = longestJobIndex+i;
+      int numRightJobs = jobs.length - longestJobIndex - i - 1;
+
+      int[][] leftJobs = new int[numLeftJobs][2];
+      int[][] rightJobs = new int[numRightJobs][2];
+
+      for(int j = 0; j < numLeftJobs; j++) {
+        int tmpJ = j;
+        if(j >= longestJobIndex) {
+          tmpJ += 1;
+        }
+        leftJobs[j] = jobs[tmpJ];
+      }
+      for(int j = 0; j < numRightJobs; j++) {
+        rightJobs[j] = jobs[longestJobIndex + j + i + 1];
+      }
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0];
+
+      tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+      tmpTardiness += getTardinessRaw(leftJobs, timeElapsed);
+      tmpTardiness += getTardinessRaw(rightJobs, leftJobsTimeElapsed);
+      if(tmpTardiness < minTardiness) {
+        minTardiness = tmpTardiness;
+      }
+      if (minTardiness == 0) break;
+    }
     return minTardiness;
   }
 

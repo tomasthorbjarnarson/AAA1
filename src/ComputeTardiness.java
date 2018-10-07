@@ -2,8 +2,14 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-public class ComputeTardiness {	
-	public static ProblemInstance readInstance(String filename){
+public class ComputeTardiness {
+
+    private static String[] rdds = {"0.2", "0.4", "0.6", "0.8", "1.0"};
+    private static String[] tfs = {"0.2", "0.4", "0.6", "0.8", "1.0"};
+    private static String[] ns = {"5", "10", "15", "20", "25", "30", "35", "40", "45",
+            "50", "55", "60", "65", "70", "75", "80","85", "90", "95", "100"};
+
+    public static ProblemInstance readInstance(String filename){
 		ProblemInstance instance = null;
 		
 		try {
@@ -35,7 +41,6 @@ public class ComputeTardiness {
 	// reads a problem, and outputs the result of both greedy and best-first
     public static void main (String args[]) {
 		ProblemInstance instance = readInstance(args[0]);
-		instance.sortJobs();
 
 		if (args.length == 1) {
             TardNamic tard = new TardNamic(instance);
@@ -43,8 +48,22 @@ public class ComputeTardiness {
             System.out.println(tardiness);
         }else if (args.length == 2 && args[1].equals("full")) {
 		    fullMeasurement(instance);
-        }else if (args.length == 2 && args[1].equals("tests")) {
-		    testMeasurements(instance, args[0]);
+        }else if (args.length == 2 && args[1].equals("measure")) {
+            for (int i = 0; i < 20; i++) {
+                TardNamic tard = new TardNamic(instance);
+                tard.getTardiness();
+            }
+
+            System.out.println("warmup done");
+
+            for (String rdd: rdds) {
+                for (String tf : tfs) {
+                    for (String n : ns) {
+                        System.out.println("rdd: " + rdd + " tf: " + tf + " n: " + n);
+                        testMeasurements(rdd, tf, n);
+                    }
+                }
+            }
         }
 	}
 
@@ -60,25 +79,36 @@ public class ComputeTardiness {
         System.out.println("Time : " + (stopTime - startTime));
         System.out.println();
 
-        TardNamic noCache = new TardNamic(instance);
+        TardNamic deltaRestriction = new TardNamic(instance);
         startTime = System.currentTimeMillis();
-        tardiness = noCache.getTardinessNoCache();
+        tardiness = deltaRestriction.getTardinessWithDeltaRestriction();
         stopTime = System.currentTimeMillis();
-        System.out.println("--==NoCache algorithm==--");
+        System.out.println("--==Delta Restriction algorithm==--");
         System.out.println("Tardiness: " + tardiness);
-        System.out.println("Cache hits: " + noCache.getCacheHits());
-        System.out.println("Cache size: " + noCache.getCacheSize());
+        System.out.println("Cache hits: " + deltaRestriction.getCacheHits());
+        System.out.println("Cache size: " + deltaRestriction.getCacheSize());
         System.out.println("Time : " + (stopTime - startTime));
         System.out.println();
 
-        TardNamic noDeltaRestriction = new TardNamic(instance);
+        TardNamic cache = new TardNamic(instance);
         startTime = System.currentTimeMillis();
-        tardiness = noDeltaRestriction.getTardinessNoDeltaRestriction();
+        tardiness = cache.getTardinessWithCache();
         stopTime = System.currentTimeMillis();
-        System.out.println("--==NoDeltaRestriction algorithm==--");
+        System.out.println("--==Cache algorithm==--");
         System.out.println("Tardiness: " + tardiness);
-        System.out.println("Cache hits: " + noDeltaRestriction.getCacheHits());
-        System.out.println("Cache size: " + noDeltaRestriction.getCacheSize());
+        System.out.println("Cache hits: " + cache.getCacheHits());
+        System.out.println("Cache size: " + cache.getCacheSize());
+        System.out.println("Time : " + (stopTime - startTime));
+        System.out.println();
+
+        TardNamic minOptimisation = new TardNamic(instance);
+        startTime = System.currentTimeMillis();
+        tardiness = minOptimisation.getTardinessWithMinOptimisation();
+        stopTime = System.currentTimeMillis();
+        System.out.println("--==Min Optimisation algorithm==--");
+        System.out.println("Tardiness: " + tardiness);
+        System.out.println("Cache hits: " + minOptimisation.getCacheHits());
+        System.out.println("Cache size: " + minOptimisation.getCacheSize());
         System.out.println("Time : " + (stopTime - startTime));
         System.out.println();
 
@@ -94,12 +124,14 @@ public class ComputeTardiness {
         System.out.println();
     }
 
-    public static void testMeasurements(ProblemInstance instance, String fileName) {
+    public static void testMeasurements(String rdd, String tf, String n) {
 	    long totalTime = 0;
 	    int totalTardiness = 0;
 	    int totalCacheHits = 0;
 	    long totalCacheSize = 0;
-	    int reps = 5;
+	    int reps = 20;
+	    String filename = "../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#" + n + ".dat";
+	    ProblemInstance instance = readInstance(filename);
 
 	    for (int i = 0; i < reps; i++) {
             TardNamic tard = new TardNamic(instance);
@@ -114,16 +146,15 @@ public class ComputeTardiness {
         double aveTime = 1.0 * totalTime / reps;
         double aveCacheHits = 1.0 * totalCacheHits / reps;
         double aveCacheSize = 1.0 * totalCacheSize / reps;
-
         try {
             FileWriter fw = new FileWriter("test.csv", true);
             DecimalFormat df = new DecimalFormat();
-
-            fileName = fileName.replace("..\\test-set\\instances\\","").replace(".dat", "");
             StringBuilder printval = new StringBuilder();
-            printval.append("\r\n").append(fileName).append(";").append(df.format(aveTime)).append(";")
-                    .append(df.format(aveTardiness)).append(";").append(df.format(aveCacheSize))
-                    .append(";").append(df.format(aveCacheHits));
+            rdd = rdd.replace(".", ",");
+            tf = tf.replace(".", ",");
+            printval.append("\r\n").append(rdd).append(";").append(tf).append(";").append(n).append(";")
+                    .append(df.format(aveTime)).append(";").append(df.format(aveTardiness)).append(";")
+                    .append(df.format(aveCacheSize)).append(";").append(df.format(aveCacheHits));
             fw.append(printval);
             fw.flush();
             fw.close();
