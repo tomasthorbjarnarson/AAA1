@@ -1,5 +1,3 @@
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.lang.Math;
 
@@ -9,20 +7,8 @@ public class TardNamic {
   private HashMap<SubproblemKey, Integer> optimalPosMap;
   private int cacheHits;
 
-
-//  public TardNamic(ProblemInstance instance) {
-//    jobs = instance.getJobs();
-//    Arrays.sort(jobs, Comparator.comparingInt(a -> a[1]));
-////    System.out.println(jobsToString(jobs, "All jobs"));
-//    tardinessMap = new HashMap<String, Double>();
-//    optimalPosMap = new HashMap<String, Double>();
-//    cacheHits = 0;
-//  }
-
   public TardNamic(Job[] jobs) {
     this.jobs = jobs;
-    Arrays.sort(jobs, Comparator.comparingDouble(Job::getDueTime));
-//    System.out.println(jobsToString(jobs, "All jobs"));
     tardinessMap = new HashMap<SubproblemKey, Double>();
     optimalPosMap = new HashMap<SubproblemKey, Integer>();
     cacheHits = 0;
@@ -55,8 +41,9 @@ public class TardNamic {
   public Double getTardiness() {
     Double tardiness = getTardiness(jobs, 0, 0);
     Job[] optJobs = createSchedule(jobs, 0);
-    System.out.println(jobsToString(optJobs, "optJobs"));
-    int scheduleTardiness = calculateTardinessFromSchedule(optJobs);
+    JobUtils optJobUtils = new JobUtils(optJobs);
+    System.out.println(optJobUtils.getString("OptJobs"));
+    int scheduleTardiness = optJobUtils.getMaxTardiness();
     System.out.println("Opt schedule tardiness: " + scheduleTardiness);
     return tardiness;
   }
@@ -104,44 +91,12 @@ public class TardNamic {
     return optJobs;
   }
 
-  private int calculateTardinessFromSchedule(Job[] jobs) {
-    int tardiness = 0;
-    int timeElapsed = 0;
-    for (int i = 0; i < jobs.length; i++) {
-      timeElapsed += jobs[i].getProcesingTime();
-      tardiness += Math.max(timeElapsed - jobs[i].getDueTime(), 0);
-    }
-    return tardiness;
-  }
-
   public int getCacheHits() {
     return cacheHits;
   }
 
   public int getCacheSize() {
     return tardinessMap.size();
-  }
-
-  private String jobsToString(int[][] jobs, String label) {
-    String s = "";
-    if (label != "") {
-      s += label + ": " + "\n";
-    }
-    for (int i = 0; i < jobs.length; i++) {
-      s += jobs[i][0] + " " + jobs[i][1] + "\n";
-    }
-    return s;
-  }
-
-  private String jobsToString(Job[] jobs, String label) {
-    String s = "";
-    if (label != "") {
-      s += label + ": " + "\n";
-    }
-    for (int i = 0; i < jobs.length; i++) {
-      s += jobs[i].getProcesingTime() + " " + jobs[i].getDueTime() + "\n";
-    }
-    return s;
   }
 
   private double getTardiness(Job[] jobs, int timeElapsed, int depth) {

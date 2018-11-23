@@ -1,6 +1,8 @@
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Scanner;
+import java.util.Comparator;
+import java.util.Arrays;
 
 public class ComputeTardiness {
 
@@ -41,12 +43,25 @@ public class ComputeTardiness {
 	// reads a problem, and outputs the result of both greedy and best-first
     public static void main (String args[]) {
 		ProblemInstance instance = readInstance(args[0]);
+        int[][] instanceJobs = instance.getJobs();
+        Arrays.sort(instanceJobs, Comparator.comparingDouble(a->a[1]));
+
+        Job[] jobs = new Job[instanceJobs.length];
+        for(int i = 0; i < jobs.length; i++) {
+            jobs[i] = new Job(i, instanceJobs[i][0], 1.0*instanceJobs[i][1]);
+        }
+
+        JobUtils jobUtils = new JobUtils(jobs);
+        System.out.println(jobUtils.getString("Original Jobs"));
 
 		if (args.length == 1) {
-//            TardNamic tard = new TardNamic(instance);
-//            int tardiness = tard.getTardiness();
-//            System.out.println(tardiness);
-            ApproximationNation approx = new ApproximationNation(instance, 0.5);
+            TardNamic tard = new TardNamic(jobs);
+            double tardiness = tard.getTardiness();
+            System.out.println(tardiness);
+            System.out.println("Now approx");
+            ApproximationNation approx = new ApproximationNation(jobs, 0.5);
+            double approxTardiness = approx.getTardiness();
+            System.out.println(approxTardiness);
 //        }else if (args.length == 2 && args[1].equals("full")) {
 //		    fullMeasurement(instance);
 //        }else if (args.length == 2 && args[1].equals("compare")) {
