@@ -48,7 +48,7 @@ public class TardNamic {
     Job[] optJobs = createSchedule(jobs, 0);
     JobUtils optJobUtils = new JobUtils(optJobs);
     System.out.println(optJobUtils.getString("OptJobs"));
-    int scheduleTardiness = optJobUtils.getMaxTardiness();
+    double scheduleTardiness = optJobUtils.getMaxTardiness();
     return optJobs;
   }
 

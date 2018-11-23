@@ -42,26 +42,38 @@ public class ComputeTardiness {
 
 	// reads a problem, and outputs the result of both greedy and best-first
     public static void main (String args[]) {
-		ProblemInstance instance = readInstance(args[0]);
-        int[][] instanceJobs = instance.getJobs();
-        Arrays.sort(instanceJobs, Comparator.comparingDouble(a->a[1]));
+      if (args.length < 2) {
+        throw new IllegalArgumentException("Must have 2 arguments");
+      }
 
-        Job[] jobs = new Job[instanceJobs.length];
-        for(int i = 0; i < jobs.length; i++) {
-            jobs[i] = new Job(i, instanceJobs[i][0], 1.0*instanceJobs[i][1]);
-        }
+      double epsilon = Double.parseDouble(args[0]);
+      ProblemInstance instance = readInstance(args[1]);
 
-        JobUtils jobUtils = new JobUtils(jobs);
-        System.out.println(jobUtils.getString("Original Jobs"));
+      instance.sortJobs();
+      int[][] instanceJobs = instance.getJobs();
 
-		if (args.length == 1) {
-            TardNamic tard = new TardNamic(jobs);
-            double tardiness = tard.getTardiness();
-            System.out.println("Now approx");
-            ApproximationNation approx = new ApproximationNation(jobs, 0.5);
-            double approxTardiness = approx.getTardiness();
-            System.out.println("Optimal Tardiness: " + tardiness);
-            System.out.println("Approximate Tardiness: " + approxTardiness);
+      Job[] jobs = new Job[instanceJobs.length];
+      for(int i = 0; i < jobs.length; i++) {
+          jobs[i] = new Job(i, instanceJobs[i][0], 1.0*instanceJobs[i][1]);
+      }
+
+      JobUtils jobUtils = new JobUtils(jobs);
+      System.out.println(jobUtils.getString("Original Jobs"));
+
+      TardNamic tard = new TardNamic(jobs);
+      double tardiness = tard.getTardiness();
+      int cacheHits = tard.getCacheHits();
+      int cacheSize = tard.getCacheSize();
+      //Job[] schedule = tard.getSchedule();
+      System.out.println("Now approx");
+      ApproximationNation approx = new ApproximationNation(jobs, epsilon);
+      double approxTardiness = approx.getTardiness();
+      System.out.println("epsilon: " + epsilon);
+      System.out.println("Optimal Tardiness: " + tardiness);
+      System.out.println("Approximate Tardiness: " + approxTardiness);
+      System.out.println("Cache hits: " + cacheHits);
+      System.out.println("Cache size: " + cacheSize);
+
 //        }else if (args.length == 2 && args[1].equals("full")) {
 //		    fullMeasurement(instance);
 //        }else if (args.length == 2 && args[1].equals("compare")) {
@@ -82,7 +94,6 @@ public class ComputeTardiness {
 //                    }
 //                }
 //            }
-        }
 	}
 
 //	public static void fullMeasurement(ProblemInstance instance) {
