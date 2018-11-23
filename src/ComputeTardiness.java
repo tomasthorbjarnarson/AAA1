@@ -127,36 +127,25 @@ public class ComputeTardiness {
     }
 
     public static void testMeasurements(String rdd, String tf, String n) {
-	    long totalTime = 0;
-	    int totalTardiness = 0;
-	    int totalCacheHits = 0;
-	    long totalCacheSize = 0;
 	    int reps = 20;
 	    String filename = "../test-set/instances/random_RDD=" + rdd + "_TF=" + tf + "_#" + n + ".dat";
 	    ProblemInstance instance = readInstance(filename);
+        StringBuilder printval = new StringBuilder();DecimalFormat df = new DecimalFormat();
+        rdd = rdd.replace(".", ",");
+        tf = tf.replace(".", ",");
 
 	    for (int i = 0; i < reps; i++) {
             TardNamic tard = new TardNamic(instance);
             long startTime = System.currentTimeMillis();
-            totalTardiness += tard.getTardiness();
+            int tardiness = tard.getTardiness();
             long stopTime = System.currentTimeMillis();
-            totalTime += stopTime - startTime;
-            totalCacheHits += tard.getCacheHits();
-            totalCacheSize += tard.getCacheSize();
+            long runTime = stopTime - startTime;
+            printval.append("\r\n").append(rdd).append(";").append(tf).append(";").append(n).append(";")
+                    .append(df.format(runTime)).append(";").append(df.format(tardiness)).append(";");
         }
-        double aveTardiness = 1.0 * totalTardiness / reps;
-        double aveTime = 1.0 * totalTime / reps;
-        double aveCacheHits = 1.0 * totalCacheHits / reps;
-        double aveCacheSize = 1.0 * totalCacheSize / reps;
         try {
             FileWriter fw = new FileWriter("test.csv", true);
-            DecimalFormat df = new DecimalFormat();
-            StringBuilder printval = new StringBuilder();
-            rdd = rdd.replace(".", ",");
-            tf = tf.replace(".", ",");
-            printval.append("\r\n").append(rdd).append(";").append(tf).append(";").append(n).append(";")
-                    .append(df.format(aveTime)).append(";").append(df.format(aveTardiness)).append(";")
-                    .append(df.format(aveCacheSize)).append(";").append(df.format(aveCacheHits));
+
             fw.append(printval);
             fw.flush();
             fw.close();
