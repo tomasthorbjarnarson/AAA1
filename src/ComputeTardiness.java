@@ -46,6 +46,7 @@ public class ComputeTardiness {
             TardNamic tard = new TardNamic(instance);
             int tardiness = tard.getTardiness();
             System.out.println(tardiness);
+            ApproximationNation approx = new ApproximationNation(instance);
         }else if (args.length == 2 && args[1].equals("full")) {
 		    fullMeasurement(instance);
         }else if (args.length == 2 && args[1].equals("compare")) {
