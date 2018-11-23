@@ -39,13 +39,17 @@ public class TardNamic {
   }
 
   public Double getTardiness() {
+    Double tardiness = getTardiness(jobs, 0, 0);    
+    return tardiness;
+  }
+
+  public Job[] getSchedule() {
     Double tardiness = getTardiness(jobs, 0, 0);
     Job[] optJobs = createSchedule(jobs, 0);
     JobUtils optJobUtils = new JobUtils(optJobs);
-    System.out.println(optJobUtils.getString("OptJobs"));
+    //System.out.println(optJobUtils.getString("OptJobs"));
     int scheduleTardiness = optJobUtils.getMaxTardiness();
-    System.out.println("Opt schedule tardiness: " + scheduleTardiness);
-    return tardiness;
+    return optJobs;
   }
 
   private Job[] getPartOfJobs(Job[] jobs, int start, int length, int leaveOut) {

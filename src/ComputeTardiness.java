@@ -57,11 +57,11 @@ public class ComputeTardiness {
 		if (args.length == 1) {
             TardNamic tard = new TardNamic(jobs);
             double tardiness = tard.getTardiness();
-            System.out.println(tardiness);
             System.out.println("Now approx");
             ApproximationNation approx = new ApproximationNation(jobs, 0.5);
             double approxTardiness = approx.getTardiness();
-            System.out.println(approxTardiness);
+            System.out.println("Optimal Tardiness: " + tardiness);
+            System.out.println("Approximate Tardiness: " + approxTardiness);
 //        }else if (args.length == 2 && args[1].equals("full")) {
 //		    fullMeasurement(instance);
 //        }else if (args.length == 2 && args[1].equals("compare")) {
