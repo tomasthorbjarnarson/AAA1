@@ -1,0 +1,28 @@
+J is list of n jobs where each job has a processing time and due time J := <{p1, d1}, {p2, d2}, ..., {pn, dn}>
+e is approximation constant
+
+APPROX-TARDINESS(J, e)
+  J := sort J by due time in non-decreasing order
+  Tmax := max tardiness of jobs in J
+  if (Tmax == 0) return 0
+
+  n := J.length
+  k := 2*e*Tmax/(n(n+1))
+
+  J' := <>
+  for i = 1 to n do
+    idx := i
+    J' := J'.push({floor(pi/k), di/k, idx})
+
+  J' := OPT-SCHEDULE(J')
+
+  approx-J := <>
+
+  for i = 1 to n do
+    approx-J := approx-J.push(J[J'[i].idx])
+
+  T' := total tardiness of jobs in approx-J
+  return T'
+
+
+  
