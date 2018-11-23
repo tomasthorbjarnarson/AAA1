@@ -42,12 +42,11 @@ public class ApproximationNation {
 
     int n = jobs.length;
     Double K = 2.0*epsilon*maxTardiness/(n*(n+1));
-
-    Double[][] scaledJobs = new Double[jobs.length][2];
+    Job[] scaledJobs = new Job[jobs.length];
     for (int i = 0; i < jobs.length; i++) {
-        scaledJobs[i][0] = 1.0 * Math.floor(jobs[i][0]/K);
-        scaledJobs[i][1] = 1.0 * jobs[i][1]/K;
+      scaledJobs[i] = new Job(i, (int) Math.floor(jobs[i][0]/K), 1.0 * jobs[i][1]/K);
     }
+
     TardNamic tard = new TardNamic(scaledJobs);
     tard.getTardiness();
 

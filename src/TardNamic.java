@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.lang.Math;
 
 public class TardNamic {
-  private Double[][] jobs;
-  private HashMap<String, Double> tardinessMap;
-  private HashMap<String, Integer> optimalPosMap;
+  private Job[] jobs;
+  private HashMap<SubproblemKey, Double> tardinessMap;
+  private HashMap<SubproblemKey, Integer> optimalPosMap;
   private int cacheHits;
 
 
@@ -19,54 +19,50 @@ public class TardNamic {
 //    cacheHits = 0;
 //  }
 
-  public TardNamic(Double[][] jobs) {
+  public TardNamic(Job[] jobs) {
     this.jobs = jobs;
-    Arrays.sort(jobs, Comparator.comparingDouble(a -> a[1]));
+    Arrays.sort(jobs, Comparator.comparingDouble(Job::getDueTime));
 //    System.out.println(jobsToString(jobs, "All jobs"));
-    tardinessMap = new HashMap<String, Double>();
-    optimalPosMap = new HashMap<String, Integer>();
+    tardinessMap = new HashMap<SubproblemKey, Double>();
+    optimalPosMap = new HashMap<SubproblemKey, Integer>();
     cacheHits = 0;
   }
 
-  private static int getLongestJobIndex(Double[][] jobs) {
+  private static int getLongestJobIndex(Job[] jobs) {
     int longestJobIndex = 0;
     int longestTime = Integer.MIN_VALUE;
     for (int i = 0; i < jobs.length; i++) {
-      if (jobs[i][0] > longestTime) {
+      if (jobs[i].getProcesingTime() > longestTime) {
         longestJobIndex = i;
-        longestTime = jobs[i][0].intValue();
+        longestTime = jobs[i].getProcesingTime();
       }
     }
     return longestJobIndex;
   }
 
-  private static int getJobTimeElapsed(Double[][] someJobs) {
+  private static int getJobTimeElapsed(Job[] someJobs) {
     int timeElapsed = 0;
-    for (Double[] someJob : someJobs) {
-      timeElapsed += someJob[0];
+    for (Job someJob : someJobs) {
+      timeElapsed += someJob.getProcesingTime();
     }
     return timeElapsed;
   }
 
-  private static String createJobKey(Double[][] someJobs, int timeElapsed) {
-    StringBuilder keyBuilder = new StringBuilder();
-    for (Double[] someJob : someJobs) {
-      keyBuilder.append(someJob[0]).append("-").append(someJob[1]).append("|");
-    }
-    return keyBuilder.append(timeElapsed).toString();
+  private static SubproblemKey createJobKey(Job[] someJobs, int timeElapsed) {
+    return new SubproblemKey(someJobs[0].getIndex(), someJobs[someJobs.length-1].getIndex(), timeElapsed, someJobs.length);
   }
 
   public Double getTardiness() {
     Double tardiness = getTardiness(jobs, 0, 0);
-    Double[][] optJobs = createSchedule(jobs, 0);
+    Job[] optJobs = createSchedule(jobs, 0);
     System.out.println(jobsToString(optJobs, "optJobs"));
     int scheduleTardiness = calculateTardinessFromSchedule(optJobs);
     System.out.println("Opt schedule tardiness: " + scheduleTardiness);
     return tardiness;
   }
 
-  private Double[][] getPartOfJobs(Double[][] jobs, int start, int length, int leaveOut) {
-    Double[][] part = new Double[length][2];
+  private Job[] getPartOfJobs(Job[] jobs, int start, int length, int leaveOut) {
+    Job[] part = new Job[length];
     int offset = start;
     for (int i = 0; i < length; i++) {
       if (i == leaveOut) {
@@ -77,11 +73,11 @@ public class TardNamic {
     return part;
   }
 
-  private Double[][] createSchedule(Double[][] jobs, int timeElapsed) {
+  private Job[] createSchedule(Job[] jobs, int timeElapsed) {
     if (jobs.length <= 1) {
       return jobs;
     }
-    Double[][] optJobs = new Double[jobs.length][2];
+    Job[] optJobs = new Job[jobs.length];
     int longestJobIndex = getLongestJobIndex(jobs);
     int optLongestJobIndex = 0;
     if (optimalPosMap.containsKey(createJobKey(jobs, timeElapsed))) {
@@ -91,12 +87,12 @@ public class TardNamic {
     int numLeftJobs = optLongestJobIndex;
     int numRightJobs = jobs.length - optLongestJobIndex - 1;
 
-    Double[][] leftJobs = getPartOfJobs(jobs, 0, numLeftJobs, longestJobIndex);
-    Double[][] rightJobs = getPartOfJobs(jobs, optLongestJobIndex + 1, numRightJobs, -1);
+    Job[] leftJobs = getPartOfJobs(jobs, 0, numLeftJobs, longestJobIndex);
+    Job[] rightJobs = getPartOfJobs(jobs, optLongestJobIndex + 1, numRightJobs, -1);
 
-    Double[][] optLeftJobs = createSchedule(leftJobs, timeElapsed);
-    int leftTimeElapsed = (int) (timeElapsed + jobs[longestJobIndex][0] + getJobTimeElapsed(leftJobs));
-    Double[][] optRightJobs = createSchedule(rightJobs, leftTimeElapsed);
+    Job[] optLeftJobs = createSchedule(leftJobs, timeElapsed);
+    int leftTimeElapsed = timeElapsed + jobs[longestJobIndex].getProcesingTime() + getJobTimeElapsed(leftJobs);
+    Job[] optRightJobs = createSchedule(rightJobs, leftTimeElapsed);
 
     for (int i = 0; i < numLeftJobs; i++) {
       optJobs[i] = optLeftJobs[i];
@@ -108,12 +104,12 @@ public class TardNamic {
     return optJobs;
   }
 
-  private int calculateTardinessFromSchedule(Double[][] jobs) {
+  private int calculateTardinessFromSchedule(Job[] jobs) {
     int tardiness = 0;
     int timeElapsed = 0;
     for (int i = 0; i < jobs.length; i++) {
-      timeElapsed += jobs[i][0];
-      tardiness += Math.max(timeElapsed - jobs[i][1], 0);
+      timeElapsed += jobs[i].getProcesingTime();
+      tardiness += Math.max(timeElapsed - jobs[i].getDueTime(), 0);
     }
     return tardiness;
   }
@@ -137,24 +133,24 @@ public class TardNamic {
     return s;
   }
 
-  private String jobsToString(Double[][] jobs, String label) {
+  private String jobsToString(Job[] jobs, String label) {
     String s = "";
     if (label != "") {
       s += label + ": " + "\n";
     }
     for (int i = 0; i < jobs.length; i++) {
-      s += jobs[i][0] + " " + jobs[i][1] + "\n";
+      s += jobs[i].getProcesingTime() + " " + jobs[i].getDueTime() + "\n";
     }
     return s;
   }
 
-  private double getTardiness(Double[][] jobs, int timeElapsed, int depth) {
+  private double getTardiness(Job[] jobs, int timeElapsed, int depth) {
     if (jobs.length == 0) {
       return 0;
     } else if (jobs.length == 1) {
-      return Math.max(timeElapsed + jobs[0][0] - jobs[0][1], 0);
+      return Math.max(timeElapsed + jobs[0].getProcesingTime() - jobs[0].getDueTime(), 0);
     }
-    String jobsKey = createJobKey(jobs, timeElapsed);
+    SubproblemKey jobsKey = createJobKey(jobs, timeElapsed);
     if (tardinessMap.containsKey(jobsKey)) {
       cacheHits += 1;
       return tardinessMap.get(jobsKey);
@@ -167,8 +163,8 @@ public class TardNamic {
       int numLeftJobs = longestJobIndex + i;
       int numRightJobs = jobs.length - longestJobIndex - i - 1;
 
-      Double[][] leftJobs = new Double[numLeftJobs][2];
-      Double[][] rightJobs = new Double[numRightJobs][2];
+      Job[] leftJobs = new Job[numLeftJobs];
+      Job[] rightJobs = new Job[numRightJobs];
 
       for (int j = 0; j < numLeftJobs; j++) {
         int tmpJ = j;
@@ -180,10 +176,10 @@ public class TardNamic {
       for (int j = 0; j < numRightJobs; j++) {
         rightJobs[j] = jobs[longestJobIndex + j + i + 1];
       }
-      int leftJobsTimeElapsed = (int) (timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex][0]);
+      int leftJobsTimeElapsed = timeElapsed + getJobTimeElapsed(leftJobs) + jobs[longestJobIndex].getProcesingTime();
 
-      if (rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]) {
-        tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
+      if (rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0].getDueTime()) {
+        tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex].getDueTime(), 0);
         tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
         tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
         if (tmpTardiness < minTardiness) {
