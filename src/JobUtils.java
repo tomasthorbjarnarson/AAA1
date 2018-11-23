@@ -21,7 +21,7 @@ public class JobUtils {
     int maxTardiness = 0;
     for (Job job : this.jobs) {
       timeElapsed += job.getProcesingTime();
-      maxTardiness += Math.max(timeElapsed - job.getDueTime(), maxTardiness);
+      maxTardiness += Math.max(timeElapsed - job.getDueTime(), 0);
     }
     return maxTardiness;
   }

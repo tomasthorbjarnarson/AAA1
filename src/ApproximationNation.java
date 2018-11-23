@@ -39,7 +39,7 @@ public class ApproximationNation {
     }
 
     JobUtils optApproxJobUtils = new JobUtils(optApproxJobs);
-    //System.out.println(optApproxJobUtils.getString("Opt Approx Jobs"));
+    System.out.println(optApproxJobUtils.getString("Opt Approx Jobs"));
     double approxTardiness = 1.0*optApproxJobUtils.getMaxTardiness();
 
     return approxTardiness;
