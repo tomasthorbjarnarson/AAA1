@@ -6,13 +6,16 @@ import java.lang.Math;
 public class TardNamic {
   private int[][] jobs;
   private HashMap<String, Integer> tardinessMap;
+  private HashMap<String, Integer> optimalPosMap;
   private int cacheHits;
 
 
   public TardNamic(ProblemInstance instance) {
     jobs = instance.getJobs();
     Arrays.sort(jobs, Comparator.comparingInt(a -> a[1]));
+    System.out.println(jobsToString(jobs, "All jobs"));
     tardinessMap = new HashMap<String, Integer>();
+    optimalPosMap = new HashMap<String, Integer>();
     cacheHits = 0;
   }
 
@@ -45,7 +48,65 @@ public class TardNamic {
   }
 
   public int getTardiness() {
-    return getTardiness(jobs, 0);
+    int tardiness = getTardiness(jobs, 0, 0);
+    int[][] optJobs = createSchedule(jobs, 0);
+    System.out.println(jobsToString(optJobs, "optJobs"));
+    int scheduleTardiness = calculateTardinessFromSchedule(optJobs);
+    System.out.println("Opt schedule tardiness: " + scheduleTardiness);
+    return tardiness;
+  }
+
+  private int[][] getPartOfJobs(int[][] jobs, int start, int length, int leaveOut) {
+    int[][] part = new int[length][2];
+    int offset = start;
+    for(int i = 0; i < length; i++) {
+      if (i == leaveOut) {
+        offset += 1;
+      }
+      part[i] = jobs[i+offset];
+    }
+    return part;
+  }
+
+  private int[][] createSchedule(int[][] jobs, int timeElapsed) {
+    if(jobs.length <= 1) {
+      return jobs;
+    }
+    int[][] optJobs = new int[jobs.length][2];
+    int longestJobIndex = getLongestJobIndex(jobs);
+    int optLongestJobIndex = 0;
+    if (optimalPosMap.containsKey(createJobKey(jobs, timeElapsed))) {
+      optLongestJobIndex = optimalPosMap.get(createJobKey(jobs, timeElapsed));
+    }
+    optJobs[optLongestJobIndex] = jobs[longestJobIndex];
+    int numLeftJobs = optLongestJobIndex;
+    int numRightJobs = jobs.length - optLongestJobIndex - 1;
+
+    int[][] leftJobs = getPartOfJobs(jobs, 0, numLeftJobs, longestJobIndex);
+    int[][] rightJobs = getPartOfJobs(jobs, optLongestJobIndex + 1, numRightJobs, -1);
+
+    int[][] optLeftJobs = createSchedule(leftJobs, timeElapsed);
+    int leftTimeElapsed = timeElapsed + jobs[longestJobIndex][0] + getJobTimeElapsed(leftJobs);
+    int[][] optRightJobs = createSchedule(rightJobs, leftTimeElapsed);
+
+    for(int i = 0; i < numLeftJobs; i++) {
+      optJobs[i] = optLeftJobs[i];
+    }
+    for(int j = 0; j < numRightJobs; j++) {
+      optJobs[j + optLongestJobIndex + 1] = optRightJobs[j];
+    }
+  
+    return optJobs;
+  }
+
+  private int calculateTardinessFromSchedule(int[][] jobs) {
+    int tardiness = 0;
+    int timeElapsed = 0;
+    for(int i = 0; i < jobs.length; i++) {
+      timeElapsed += jobs[i][0];
+      tardiness += Math.max(timeElapsed - jobs[i][1], 0);
+    }
+    return tardiness;
   }
 
   public int getTardinessRaw() {
@@ -60,7 +121,18 @@ public class TardNamic {
     return tardinessMap.size();
   }
 
-  private int getTardiness(int[][] jobs, int timeElapsed) {
+  private String jobsToString(int[][] jobs, String label) {
+    String s = "";
+    if (label != "") {
+      s += label + ": " + "\n";
+    }
+    for (int i = 0; i < jobs.length; i++) {
+      s += jobs[i][0] + " " + jobs[i][1] + "\n";
+    }
+    return s;
+  }
+
+  private int getTardiness(int[][] jobs, int timeElapsed, int depth) {
     if(jobs.length == 0) {
       return 0;
     } else if(jobs.length == 1) {
@@ -73,6 +145,7 @@ public class TardNamic {
     }
     int longestJobIndex = getLongestJobIndex(jobs);
     int minTardiness = Integer.MAX_VALUE;
+    int someIndex = 0;
     for(int i = 0; i < jobs.length - longestJobIndex; i++) {
       int tmpTardiness = 0;
       int numLeftJobs = longestJobIndex+i;
@@ -95,10 +168,11 @@ public class TardNamic {
 
       if(rightJobs.length == 0 || leftJobsTimeElapsed < rightJobs[0][1]){
         tmpTardiness += Math.max(leftJobsTimeElapsed - jobs[longestJobIndex][1], 0);
-        tmpTardiness += getTardiness(leftJobs, timeElapsed);
-        tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed);
+        tmpTardiness += getTardiness(leftJobs, timeElapsed, depth + 1);
+        tmpTardiness += getTardiness(rightJobs, leftJobsTimeElapsed, depth + 1);
         if(tmpTardiness < minTardiness) {
           minTardiness = tmpTardiness;
+          someIndex = numLeftJobs;
         }
         if(minTardiness == 0) {
           break;
@@ -106,6 +180,7 @@ public class TardNamic {
       }
     }
     tardinessMap.put(jobsKey, minTardiness);
+    optimalPosMap.put(jobsKey, someIndex);
     return minTardiness;
   }
 
